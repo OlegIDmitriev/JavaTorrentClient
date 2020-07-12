@@ -8,6 +8,7 @@ import ru.raiffeisen.model.bencode.element.BenString;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class Input {
         final char[] buffer = new char[bufferSize];
         final StringBuilder out = new StringBuilder();
         try (InputStream is = new FileInputStream(path);
-             Reader in = new InputStreamReader(is, "UTF-8")) {
+             Reader in = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             for (; ; ) {
                 int rsz = in.read(buffer, 0, buffer.length);
                 if (rsz < 0)
@@ -44,18 +45,18 @@ public class Input {
         byte[] array = null;
         try {
             array = Files.readAllBytes(Paths.get(path));
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
         return array;
     }
 
-    public static List<BenElement> parseBencode(StringBuilder bencode){
+    public static List<BenElement> parseBencode(StringBuilder bencode) {
         List<BenElement> elements = new ArrayList<>();
         int index = 0;
 
-        while (index < bencode.length()){
+        while (index < bencode.length()) {
             BenElement element = parseBenElement(bencode, index);
             elements.add(element);
             index += element.getLength();
@@ -64,27 +65,27 @@ public class Input {
         return elements;
     }
 
-    private static BenElement parseBenElement(StringBuilder bencode, int index){
+    private static BenElement parseBenElement(StringBuilder bencode, int index) {
         char c = bencode.charAt(index);
         BenElement element = null;
 
-        if(c == 'i'){
+        if (c == 'i') {
             element = parseBenNumber(bencode, index);
-        } else if(Character.isDigit(c)){
+        } else if (Character.isDigit(c)) {
             element = parseBenString(bencode, index);
-        } else if(c == 'l'){
+        } else if (c == 'l') {
             element = parseBenList(bencode, index);
-        } else if(c == 'd'){
+        } else if (c == 'd') {
             element = parseBenMap(bencode, index);
         }
 
         return element;
     }
 
-    private static BenNumber parseBenNumber(StringBuilder bencode, int index){
+    private static BenNumber parseBenNumber(StringBuilder bencode, int index) {
         char c = bencode.charAt(index);
 
-        if(c != 'i'){
+        if (c != 'i') {
             return null;
         }
 
@@ -93,10 +94,10 @@ public class Input {
         return new BenNumber(Integer.parseInt(number), number.length() + 2);
     }
 
-    private static BenString parseBenString(StringBuilder bencode, int index){
+    private static BenString parseBenString(StringBuilder bencode, int index) {
         char c = bencode.charAt(index);
 
-        if(!Character.isDigit(c)){
+        if (!Character.isDigit(c)) {
             return null;
         }
 
@@ -109,17 +110,17 @@ public class Input {
         return new BenString(value, strLength.length() + length + 1);
     }
 
-    private static BenList parseBenList(StringBuilder bencode, int index){
+    private static BenList parseBenList(StringBuilder bencode, int index) {
         char c = bencode.charAt(index);
 
-        if(c != 'l'){
+        if (c != 'l') {
             return null;
         }
 
         BenList list = new BenList();
         index++;
 
-        while (index < bencode.length() && bencode.charAt(index) != 'e'){
+        while (index < bencode.length() && bencode.charAt(index) != 'e') {
             BenElement element = parseBenElement(bencode, index);
             list.add(element);
             index += element.getLength();
@@ -129,17 +130,17 @@ public class Input {
         return list;
     }
 
-    private static BenMap parseBenMap(StringBuilder bencode, int index){
+    private static BenMap parseBenMap(StringBuilder bencode, int index) {
         char c = bencode.charAt(index);
 
-        if(c != 'd'){
+        if (c != 'd') {
             return null;
         }
 
         BenMap map = new BenMap();
         index++;
 
-        while (index < bencode.length() && bencode.charAt(index) != 'e'){
+        while (index < bencode.length() && bencode.charAt(index) != 'e') {
             BenString key = parseBenString(bencode, index);
             index += key.getLength();
 
